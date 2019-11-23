@@ -9,11 +9,9 @@ logger = logging.getLogger(__name__)
 streamHandler = logging.StreamHandler(sys.stdout)
 logger.addHandler(logging.NullHandler())
 
-# ch = logging.StreamHandler(logging.NullHandler)
-# logger.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', level=logging.DEBUG)
-# logger.addHandler(ch)
+
 class FFmpeg():
-    def __init__(self, resolution='1920x1080', audio=0, video=0,
+    def __init__(self, resolution='1920x1080', audio=1, video=0,
                  time=-1, accelerator='', video_devices=[], audio_devices=[], output='http://121.158.56.113:8181/out.m3u8'):
         self.command = 'ffmpeg -y '
 
@@ -32,15 +30,14 @@ class FFmpeg():
 
         if self.isNdivia:
             self.command += '-c:v h264_nvenc '
-        self.command += '-hls_time 10 -hls_list_size 0 '
+        if self.isIntel:
+            self.command += '-c:v h264_qsv -preset veryfast -tune zerolatency -crf 25 '
                     
         self.command += output
-        print(self.command)
         self.args = self.command.split(' ')
         for i in range(len(self.args)):
             if not self.args[i].find('audio'):
                 self.args[i] = 'audio=%s' %(audio_devices[audio])
-        print(self.args)
 
 
     def start(self):
@@ -55,7 +52,6 @@ class FFmpeg():
 def systemCall(command):
     os.system(command)
     sys.stdout = open('test.txt', 'w')
-    print('os pid : ',os.getpid)
 
 def device_list():
 
