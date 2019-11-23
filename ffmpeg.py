@@ -1,14 +1,24 @@
 import os
+import sys
 import subprocess as sub
 from multiprocessing import Process
+import multiprocessing
+import logging 
+ 
+logger = logging.getLogger(__name__)
+streamHandler = logging.StreamHandler(sys.stdout)
+logger.addHandler(logging.NullHandler())
 
+# ch = logging.StreamHandler(logging.NullHandler)
+# logger.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', level=logging.DEBUG)
+# logger.addHandler(ch)
 class FFmpeg():
-    def __init__(self, resolution='1920x1080', audio=-1, camera=False,
-                 time=-1, accelerator='', output='C:/public/out.avi'):
+    def __init__(self, resolution='1920x1080', audio=0, video=0,
+                 time=-1, accelerator='', video_devices=[], audio_devices=[], output='http://121.158.56.113:8181/out.m3u8'):
         self.command = 'ffmpeg -y '
+
         self.isNdivia = False
         self.isIntel = False
-        self.video_devices, self.audio_devices = device_list()
         if time != -1:
             self.command += '-t %s ' %(time)
 
@@ -16,18 +26,26 @@ class FFmpeg():
             self.command += '-hwaccel cuvid '
             self.isNdivia = True
 
-        self.command += '-f gdigrab -offset_x 0 -offset_y 0 -video_size %s -framerate 60 -draw_mouse 1 -i desktop ' %(resolution)
+        self.command += '-f gdigrab -offset_x 0 -offset_y 0 -video_size %s -r 60 -draw_mouse 1 -i desktop ' %(resolution)
 
-        self.command += '-f dshow -i audio="%s" ' % (self.audio_devices[audio])
+        self.command += '-f dshow -i audio '
 
         if self.isNdivia:
             self.command += '-c:v h264_nvenc '
+        self.command += '-hls_time 10 -hls_list_size 0 '
                     
         self.command += output
+        print(self.command)
+        self.args = self.command.split(' ')
+        for i in range(len(self.args)):
+            if not self.args[i].find('audio'):
+                self.args[i] = 'audio=%s' %(audio_devices[audio])
+        print(self.args)
+
 
     def start(self):
-        self.proc = Process(target=systemCall, args=(self.command,))
-        self.proc.start()
+        self.proc = sub.Popen(self.args)
+        
     def terminate(self):
         self.proc.terminate()
     def overlay(self):
@@ -35,12 +53,12 @@ class FFmpeg():
 
 
 def systemCall(command):
-    try:
-        os.system(command)
-    except Exception as e:
-        print('error :', str(e))
+    os.system(command)
+    sys.stdout = open('test.txt', 'w')
+    print('os pid : ',os.getpid)
 
 def device_list():
+
     audio = False
     video = False
     temp_audio_devices = []
@@ -53,10 +71,12 @@ def device_list():
         os.remove(file_name)
     command = 'ffmpeg -report -list_devices true -f dshow -i dummy'
     try:
-        sub.call(command.split(' '))
+        sub.call(command, stdout=sub.PIPE, stderr=sub.STDOUT)
     except Exception as e:
         print(e)
     result, file_name = find_log()
+    if not result:
+        return [], []
     f = open(file_name, encoding='utf-8')
     lines = f.readlines()
     f.close()
@@ -84,7 +104,6 @@ def device_list():
         if device.find('"') >= 0 or device.find('Alternative name') >= 0:
             start_index = device.find('"')
             video_devices.append(device[start_index + 1:-2])
-
     return audio_devices, video_devices
 
 

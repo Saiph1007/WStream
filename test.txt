@@ -1,0 +1,10 @@
+0 : Mic in at rear panel (Pink)(Realtek(R) Audio)
+
+1 : ∏∂¿Ã≈©(3- 2.4G Wireless headset)
+
+2 : Stereo mix(Realtek(R) Audio)
+
+not found video devices...
+
+1. device list, 2. streaming start, 3.streaming stop 4. terminate
+command : 

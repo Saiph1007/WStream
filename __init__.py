@@ -28,7 +28,7 @@ def intel_recording(output_path):
 
 def ndivia_recording(output_path):
     # ndivia = 'ffmpeg -y -hwaccel cuvid -c:v h264_cuvid -f gdigrab -offset_x 0 -offset_y 0 -video_size 1920x1080 -framerate 60 -r 60 -draw_mouse 1 -i desktop -qp 30 -f dshow -i audio -r 60 -c:v h264_nvenc -map 0:v -map 1:a: ' + output_path
-    ndivia = 'ffmpeg -y -hwaccel cuvid -f gdigrab -offset_x 0 -offset_y 0 -video_size 1920x1080 -framerate 60 -draw_mouse 1 -i desktop -f dshow -i audio -c:v h264_nvenc ' + output_path
+    ndivia = 'ffmpeg -y -hwaccel cuvid -f gdigrab -offset_x 0 -offset_y 0 -video_size 2560x1440 -framerate 60 -draw_mouse 1 -i desktop -f dshow -i audio -c:v h264_nvenc ' + output_path
     args = ndivia.split(' ')
     for i in range(len(args)):
         if not args[i].find('audio'):
@@ -61,9 +61,9 @@ if __name__ == '__main__':
     #         args[i] = 'audio=Stereo mix(Realtek(R) Audio)'
         # print(args[i])
     # print('args :', args)
-    device_list()
+    # device_list()
 
-    # ndivia_recording('http://121.158.56.113:8181/out.m3u8')
+    ndivia_recording('http://121.158.56.113:8181/out.m3u8')
     # ndivia_recording('test.mp4')
     # ret = sub.call(args)
     # print(ret)
